@@ -1,0 +1,67 @@
+{
+  "name": "povtor",
+  "version": "1.0.0",
+  "description": "Repeat function call depending on the previous call result and specified conditions.",
+  "main": "dist/povtor.js",
+  "module": "dist/povtor.m.js",
+  "umd:main": "dist/povtor.umd.js",
+  "types": "dist/povtor.d.ts",
+  "scripts": {
+    "build-commonjs": "microbundle build src/index.ts --output dist --format cjs --strict --no-compress",
+    "build-esm": "microbundle build src/index.ts --output dist --format es --no-compress",
+    "build-umd-min": "microbundle build src/index.ts --output dist --format umd --strict",
+    "build": "del-cli dist && npm run build-commonjs && npm run build-esm && npm run build-umd-min && cp-file dist/src/index.d.ts dist/povtor.d.ts && del-cli dist/src",
+    "lint": "tslint --project tsconfig.json 'src/**/*.ts'",
+    "test": "jest",
+    "check": "npm run lint && npm run test",
+    "precommit": "npm run check"
+  },
+  "keywords": [
+    "retry",
+    "retries",
+    "repeat",
+    "repetition",
+    "try",
+    "action",
+    "operation",
+    "function",
+    "call",
+    "invoke",
+    "invocation",
+    "execution",
+    "attempt",
+    "promise",
+    "failed",
+    "rejected",
+    "condition",
+    "conditional",
+    "delay",
+    "timeout"
+  ],
+  "devDependencies": {
+    "@types/jest": "22.2.3",
+    "cp-file-cli": "1.0.1",
+    "del-cli": "1.1.0",
+    "husky": "0.14.3",
+    "jest": "22.4.2",
+    "microbundle": "0.4.4",
+    "ts-jest": "22.4.6",
+    "tslint": "5.9.1",
+    "typescript": "2.9.1"
+  },
+  "homepage": "https://github.com/gamtiq/povtor",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gamtiq/povtor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gamtiq/povtor/issues"
+  },
+  "author": {
+    "name": "Denis Sikuler"
+  },
+  "license": "MIT",
+  "engines": {
+    "npm": ">=3.0.0"
+  }
+}

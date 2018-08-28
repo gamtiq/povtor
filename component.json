@@ -1,0 +1,35 @@
+{
+  "name": "povtor",
+  "repository": "gamtiq/povtor",
+  "description": "Repeat function call depending on the previous call result and specified conditions.",
+  "version": "1.0.0",
+  "keywords": [
+    "retry",
+    "retries",
+    "repeat",
+    "repetition",
+    "try",
+    "action",
+    "operation",
+    "function",
+    "call",
+    "invoke",
+    "invocation",
+    "execution",
+    "attempt",
+    "promise",
+    "failed",
+    "rejected",
+    "condition",
+    "conditional",
+    "delay",
+    "timeout"
+  ],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "dist/povtor.umd.js",
+  "scripts": [
+    "dist/povtor.umd.js"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": true,
+        "noEmitHelpers": true,
+        "importHelpers": true,
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "removeComments": true,
+        "lib": [
+            "dom",
+            "es6"
+        ],
+        "baseUrl": ".",
+        "paths": {},
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "rootDir": ".",
+        "outDir": "./build",
+        "declarationDir": "./build"
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/*.spec.ts",
+        "**/*.test.ts"
+    ],
+    "awesomeTypescriptLoaderOptions": {
+        "forkChecker": true,
+        "useWebpackText": true
+    },
+    "compileOnSave": false,
+    "buildOnSave": false
+}

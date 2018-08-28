@@ -1,0 +1,42 @@
+{
+  "name": "povtor",
+  "main": [
+    "dist/povtor.umd.js"
+  ],
+  "version": "1.0.0",
+  "homepage": "https://github.com/gamtiq/povtor",
+  "authors": [
+    "Denis Sikuler"
+  ],
+  "description": "Repeat function call depending on the previous call result and specified conditions.",
+  "keywords": [
+    "retry",
+    "retries",
+    "repeat",
+    "repetition",
+    "try",
+    "action",
+    "operation",
+    "function",
+    "call",
+    "invoke",
+    "invocation",
+    "execution",
+    "attempt",
+    "promise",
+    "failed",
+    "rejected",
+    "condition",
+    "conditional",
+    "delay",
+    "timeout"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
