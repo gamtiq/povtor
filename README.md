@@ -130,11 +130,14 @@ Call specified function and repeat calls depending on settings.
 * `delay` - an amount of milliseconds before first call of the action function.
   When the value is not specified or is negative, the action function will be called immediately first time.
 * `retryAttempts` - an array specifying amount and timeouts between repeated calls of the action function.
+  Each item can be a number or a function (see `retryTimeout` setting for details).
   Has priority over `retryQty` and `retryTimeout` settings.
 * `retryQty` - maximum number of repeated calls of the action function. A negative value means no restriction.
   Default value is `-1`.
-* `retryTimeout` - a timeout between repeated calls of the action function.
-  A negative value means the repeat call will be made without delay (this is applied by default).
+* `retryTimeout` - a timeout between repeated calls of the action function, or a function that returns such timeout.
+  A negative or non-number value means the repeat call will be made without delay (this is applied by default).
+  If specified function returns `false` then retry process will be finished and result promise
+  will be fulfilled or rejected depending on result of the last action's call.
 * `retryOnError` - a boolean value or a function returning boolean value that specifies whether the action function
   should be called again when the action function throws an error or returned promise is rejected.
   When not specified the call of the action function will not be repeated on an error.
@@ -150,6 +153,9 @@ The only required field is `action`.
   or the last error.
 * `attempt` - number of calls of the action function that have already made.
 * `error` - last error or value of promise rejection.
+* `isError` - whether the last call of the action function is ended with error.
+* `result` - contains result of each call of the action function.
+* `settings` - settings that were passed to `retry` function.
 * `stop` - function that can be used to stop the process of calls repeating. Returns value of `promise` field.
 * `stopped` - a boolean value that indicates whether the process of calls repeating is stopped.
 * `value` - a value of last successfull call of the action function. When the action function returns a promise,

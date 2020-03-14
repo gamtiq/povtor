@@ -4,6 +4,7 @@ function retry(settings) {
     resultResolve = resolve;
     resultReject = reject;
   });
+  var callResultList = [];
   var retryTimeout = settings.retryTimeout;
   var index = 0;
   var stopped = false;
@@ -43,7 +44,10 @@ function retry(settings) {
   var retryResult = {
     attempt: index,
     error: actionResult,
+    isError: false,
     promise: resultPromise,
+    result: callResultList,
+    settings: settings,
     stop: stopRetry,
     stopped: false,
     value: actionResult,
@@ -69,11 +73,27 @@ function retry(settings) {
     }
   }
 
+  function end() {
+    if (retryResult.isError) {
+      resultReject(retryResult.error);
+    } else {
+      resultResolve(retryResult.value);
+    }
+  }
+
   function repeat() {
     var timeout;
 
     if (index) {
       timeout = retryAttempts ? retryAttempts.shift() : retryTimeout;
+
+      if (typeof timeout === 'function') {
+        timeout = timeout(retryResult);
+
+        if (timeout === false) {
+          return end();
+        }
+      }
     } else {
       timeout = settings.delay;
     }
@@ -92,6 +112,11 @@ function retry(settings) {
 
   function onActionEnd(value) {
     retryResult.value = value;
+    retryResult.result.push({
+      value: value,
+      time: new Date().getTime()
+    });
+    retryResult.isError = false;
     retryResult.valueWait = false;
     var retryTest;
 
@@ -101,32 +126,37 @@ function retry(settings) {
       if (!attempts) {
         retryTest = false;
       } else if (typeof retryTest === 'function') {
-        retryTest = retryTest(value);
+        retryTest = retryTest(value, retryResult);
       }
     }
 
     if (retryTest) {
       repeat();
     } else {
-      resultResolve(value);
+      end();
     }
   }
 
   function onActionError(reason) {
     retryResult.error = reason;
+    retryResult.result.push({
+      error: reason,
+      time: new Date().getTime()
+    });
+    retryResult.isError = true;
     retryResult.valueWait = false;
     var retryOnError = settings.retryOnError;
 
     if (stopped || !attempts) {
       retryOnError = false;
     } else if (typeof retryOnError === 'function') {
-      retryOnError = retryOnError(reason);
+      retryOnError = retryOnError(reason, retryResult);
     }
 
     if (retryOnError) {
       repeat();
     } else {
-      resultReject(reason);
+      end();
     }
   }
 
