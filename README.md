@@ -143,7 +143,7 @@ Call specified function and repeat calls depending on settings.
 
 The only required field is `action`.
 
-`retry` function returns `RetryResult` - an object that can be used to observe and control the process of calls repeating.  
+`retry` function returns `RetryResult` - an object that can be used to observe and control the process of calls repeating.
 **`RetryResult`** contains the following fields:
 
 * `promise` - promise that can be used to observe the process and to get the final value of the action function
@@ -169,5 +169,5 @@ Add unit tests for any new or changed functionality.
 Lint and test your code.
 
 ## License <a name="license"></a> [&#x2191;](#start)
-Copyright (c) 2018 Denis Sikuler  
+Copyright (c) 2018-2020 Denis Sikuler
 Licensed under the MIT license.

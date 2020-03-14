@@ -1,11 +1,11 @@
-export type RetryAction = (...args: any[]) => Promise<any> | any;
+export type RetryAction = (...args: unknown[]) => Promise<unknown> | unknown;
 
-export type RetryTest = (value: any) => boolean;
+export type RetryTest = (value: unknown) => boolean;
 
 export interface RetrySettings {
     action: RetryAction;
-    actionContext?: any;
-    actionParams?: any[];
+    actionContext?: unknown;
+    actionParams?: unknown[];
     delay?: number;
     retryAttempts?: number[];
     retryQty?: number;
@@ -15,21 +15,22 @@ export interface RetrySettings {
 }
 
 export interface WithPromiseField {
-    promise: Promise<any>;
+    promise: Promise<unknown>;
 }
 
 export interface RetryResult extends WithPromiseField {
     attempt: number;
-    error: any;
-    stop: () => Promise<any>;
+    error: unknown;
+    stop: () => Promise<unknown>;
     stopped: boolean;
-    value: any;
+    value: unknown;
     valueWait: boolean;
     wait: boolean;
 }
 
 export function retry(settings: RetrySettings): RetryResult {
     let actionResult, resultReject, resultResolve, timeoutId;
+    // eslint-disable-next-line func-names, prefer-arrow-callback
     const resultPromise = new Promise(function(resolve, reject) {
         resultResolve = resolve;
         resultReject = reject;
@@ -41,6 +42,7 @@ export function retry(settings: RetrySettings): RetryResult {
 
     let attempts: number;
     let { retryAttempts } = settings;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain
     if (retryAttempts && retryAttempts.length) {
         attempts = retryAttempts.length + 1;
     }
@@ -55,27 +57,60 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
-    function retryAction() {
+    function stopRetry(): Promise<unknown> {
+        if (! stopped) {
+            /* eslint-disable @typescript-eslint/no-use-before-define */
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                retryResult.wait = false;
+            }
+            stopped = retryResult.stopped = true;
+            if (! retryResult.valueWait) {
+                resultResolve(retryResult.value);
+            }
+            /* eslint-enable @typescript-eslint/no-use-before-define */
+        }
+
+        return resultPromise;
+    }
+
+    const retryResult: RetryResult = {
+        attempt: index,
+        error: actionResult,
+        promise: resultPromise,
+        stop: stopRetry,
+        stopped: false,
+        value: actionResult,
+        valueWait: false,
+        wait: false
+    };
+
+    function retryAction(): void {
         retryResult.attempt = ++index;
         retryResult.wait = false;
         retryResult.valueWait = true;
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             actionResult = settings.action.apply(settings.actionContext || null, settings.actionParams || []);
             if (actionResult && typeof actionResult === 'object' && typeof actionResult.then === 'function') {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 actionResult.then(onActionEnd, onActionError);
             }
             else {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 onActionEnd(actionResult);
             }
         }
         catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
             onActionError(e);
         }
     }
 
-    function repeat() {
+    function repeat(): void {
         let timeout;
         if (index) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             timeout = retryAttempts
                 ? retryAttempts.shift()
                 : retryTimeout;
@@ -95,10 +130,10 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
-    function onActionEnd(value: any) {
+    function onActionEnd(value: unknown): void {
         retryResult.value = value;
         retryResult.valueWait = false;
-        let retryTest: any;
+        let retryTest: unknown;
         if (! stopped) {
             retryTest = settings.retryTest;
             if (! attempts) {
@@ -116,7 +151,7 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
-    function onActionError(reason: any) {
+    function onActionError(reason: unknown): void {
         retryResult.error = reason;
         retryResult.valueWait = false;
         let { retryOnError } = settings;
@@ -134,37 +169,11 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
-    function stopRetry() {
-        if (! stopped) {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                retryResult.wait = false;
-            }
-            stopped = retryResult.stopped = true;
-            if (! retryResult.valueWait) {
-                resultResolve(retryResult.value);
-            }
-        }
-
-        return resultPromise;
-    }
-
-    const retryResult: RetryResult = {
-        attempt: index,
-        error: actionResult,
-        promise: resultPromise,
-        stop: stopRetry,
-        stopped: false,
-        value: actionResult,
-        valueWait: false,
-        wait: false
-    };
-
     repeat();
 
     return retryResult;
 }
 
-export function getPromiseField(obj: WithPromiseField): Promise<any> {
+export function getPromiseField(obj: WithPromiseField): Promise<unknown> {
     return obj.promise;
 }

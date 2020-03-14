@@ -1,9 +1,9 @@
-export declare type RetryAction = (...args: any[]) => Promise<any> | any;
-export declare type RetryTest = (value: any) => boolean;
+export declare type RetryAction = (...args: unknown[]) => Promise<unknown> | unknown;
+export declare type RetryTest = (value: unknown) => boolean;
 export interface RetrySettings {
     action: RetryAction;
-    actionContext?: any;
-    actionParams?: any[];
+    actionContext?: unknown;
+    actionParams?: unknown[];
     delay?: number;
     retryAttempts?: number[];
     retryQty?: number;
@@ -12,16 +12,16 @@ export interface RetrySettings {
     retryTest?: boolean | RetryTest;
 }
 export interface WithPromiseField {
-    promise: Promise<any>;
+    promise: Promise<unknown>;
 }
 export interface RetryResult extends WithPromiseField {
     attempt: number;
-    error: any;
-    stop: () => Promise<any>;
+    error: unknown;
+    stop: () => Promise<unknown>;
     stopped: boolean;
-    value: any;
+    value: unknown;
     valueWait: boolean;
     wait: boolean;
 }
 export declare function retry(settings: RetrySettings): RetryResult;
-export declare function getPromiseField(obj: WithPromiseField): Promise<any>;
+export declare function getPromiseField(obj: WithPromiseField): Promise<unknown>;

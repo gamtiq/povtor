@@ -1,22 +1,26 @@
 import { retry } from './index';
 
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+
 describe('retry', () => {
     let undef;
 
-    function getAction(value, timeout?: number) {
-        return function action() {
+    function getAction(value, timeout?: number): () => Promise<number> {
+        return function action(): Promise<number> {
             return timeout
                 ? new Promise((resolve) => {
+                    // eslint-disable-next-line no-param-reassign
                     setTimeout(() => resolve(value++), timeout);
                 })
+                // eslint-disable-next-line no-param-reassign
                 : Promise.resolve(value++);
-        }
+        };
     }
 
-    function getLessTest(max) {
-        return function lessTest(value) {
+    function getLessTest(max): (value: number) => boolean {
+        return function lessTest(value): boolean {
             return value < max;
-        }
+        };
     }
 
     it('should call action only once', () => {
@@ -132,7 +136,7 @@ describe('retry', () => {
 
         return result.promise.then((value) => {
             expect( new Date().getTime() - startTime )
-                .toBeGreaterThanOrEqual( delay + retryAttempts.reduce((sum, value) => sum + value, 0) );
+                .toBeGreaterThanOrEqual( delay + retryAttempts.reduce((sum, val) => sum + val, 0) );
             expect( result.attempt )
                 .toBe( retryQty + 1 );
             expect( value )
@@ -167,16 +171,17 @@ describe('retry', () => {
     it('should call action with context and parameters', () => {
         const obj = {
             value: 0,
-            change(getChange) {
+            change(getChange: () => number): Promise<number> {
                 return Promise.resolve( this.value += getChange() );
             }
         };
         const retryQty = 3;
         const result = retry({
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             action: obj.change,
             actionContext: obj,
             actionParams: [
-                function getChange() {
+                function getChange(): number {
                     return result.attempt * 2;
                 }
             ],
@@ -205,6 +210,7 @@ describe('retry', () => {
             retryQty: 100
         });
 
+        // eslint-disable-next-line dot-notation
         return result.promise.catch((value) => {
             expect( result.attempt )
                 .toBe( 1 );
@@ -230,6 +236,7 @@ describe('retry', () => {
             retryOnError: true
         });
 
+        // eslint-disable-next-line dot-notation
         return result.promise.catch((value) => {
             expect( result.attempt )
                 .toBe( retryQty + 1 );
@@ -253,9 +260,10 @@ describe('retry', () => {
         const result = retry({
             action: () => Promise.reject(reason += msg),
             retryQty: -1,
-            retryOnError: (reason) => reason.length < maxLen
+            retryOnError: (value: string) => value.length < maxLen
         });
 
+        // eslint-disable-next-line dot-notation
         return result.promise.catch((value) => {
             expect( result.attempt )
                 .toBe( maxLen );
@@ -279,9 +287,10 @@ describe('retry', () => {
                 throw new Error(reason += msg);
             },
             retryQty: 500,
-            retryOnError: (reason: Error) => reason.message.length < maxLen
+            retryOnError: (err: Error) => err.message.length < maxLen
         });
 
+        // eslint-disable-next-line dot-notation
         return result.promise.catch((value: Error) => {
             expect( result.attempt )
                 .toBe( maxLen );
@@ -304,6 +313,7 @@ describe('retry', () => {
         const result = retry({
             action: () => {
                 qty++;
+
                 return qty % 2 === 1
                     ? Promise.resolve(qty)
                     : Promise.reject(-qty);
@@ -313,6 +323,7 @@ describe('retry', () => {
             retryOnError: true
         });
 
+        // eslint-disable-next-line dot-notation
         return result.promise.catch((value) => {
             expect( result.attempt )
                 .toBe( retryQty + 1 );
@@ -334,7 +345,7 @@ describe('retry', () => {
             retryTest: true,
             retryQty: -123
         });
-        let qty, val;
+        let qty: number, val: number;
 
         expect( result.stopped )
             .toBe( false );
@@ -378,6 +389,7 @@ describe('retry', () => {
                 .toBe( false );
             expect( result.valueWait )
                 .toBe( false );
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             result.promise.then((value) => {
                 expect( result.stop() )
                     .toBe( result.promise );
@@ -400,7 +412,7 @@ describe('retry', () => {
             retryQty: 400,
             retryTimeout: 100
         });
-        let qty, val;
+        let qty: number, val;
 
         expect( result.stopped )
             .toBe( false );
@@ -444,6 +456,7 @@ describe('retry', () => {
                 .toBe( false );
             expect( result.valueWait )
                 .toBe( false );
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             result.promise.then((value) => {
                 expect( result.stop() )
                     .toBe( result.promise );
