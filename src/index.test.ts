@@ -449,6 +449,75 @@ describe('retry', () => {
         });
     });
 
+    it('should end action calls because of time limit', () => {
+        const timeLimit = 350;
+        const result = retry({
+            action: getAction(0),
+            retryTest: true,
+            retryTimeout: 150,
+            timeLimit
+        });
+
+        return result.promise.then((value) => {
+            expect( new Date().getTime() - result.startTime )
+                .toBeGreaterThan( timeLimit );
+            expect( result.attempt )
+                .toBe( 4 );
+            expect( value )
+                .toBe( 3 );
+            expect( result.value )
+                .toBe( value );
+            expect( result.error )
+                .toBe( undef );
+            expect( result.isError )
+                .toBe( false );
+            expect( result.result.length )
+                .toBe( result.attempt );
+            expect( result.valueWait )
+                .toBe( false );
+            expect( result.wait )
+                .toBe( false );
+        });
+    });
+
+    it('should end action calls on promise rejection because of time limit', () => {
+        const reason = 'No data';
+        const timeLimit = 250;
+        const result = retry({
+            action: () => Promise.reject(reason),
+            retryTimeout: 100,
+            retryOnError: true,
+            timeLimit
+        });
+
+        // eslint-disable-next-line dot-notation
+        return result.promise.catch((value) => {
+            expect( new Date().getTime() - result.startTime )
+                .toBeGreaterThan( timeLimit );
+            expect( result.attempt )
+                .toBe( 4 );
+            expect( value )
+                .toBe( reason );
+            expect( result.error )
+                .toBe( value );
+            expect( result.value )
+                .toBe( undef );
+            expect( result.isError )
+                .toBe( true );
+            expect( result.result.length )
+                .toBe( result.attempt );
+            expect( result.valueWait )
+                .toBe( false );
+            expect( result.wait )
+                .toBe( false );
+
+            for (const callResult of result.result) {
+                expect( (callResult as ErrorResult).error )
+                    .toBe( reason );
+            }
+        });
+    });
+
     it('result should contain last value and last error', () => {
         const retryQty = 5;
         let qty = 0;

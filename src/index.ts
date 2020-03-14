@@ -47,6 +47,15 @@ export interface RetrySettings {
      * should be called again after a made call. When not specified the action call will not be repeated.
      */
     retryTest?: boolean | RetryTest;
+    /**
+     * Time in milliseconds specifying how long retry process can last
+     * starting from call of `retry` function.
+     * Elapsed time is checked before each retry attempt and when the time exceeds the given limit
+     * process will be finished and result promise will be fulfilled or rejected
+     * depending on result of the last action's call.
+     * `0` or negative value means no limit.
+     */
+    timeLimit?: number;
     [field: string]: unknown;
 }
 
@@ -81,6 +90,8 @@ export interface RetryResult extends WithPromiseField {
     result: ActionCallResult[];
     /** Settings that were passed to `retry` function. */
     settings: RetrySettings;
+    /** Time in milliseconds when `retry` function was called. */
+    startTime: number;
     /** Function that can be used to stop the process of calls repeating. Returns value of `promise` field. */
     stop: () => Promise<unknown>;
     /** A boolean value that indicates whether the process of calls repeating is stopped. */
@@ -122,7 +133,7 @@ export function retry(settings: RetrySettings): RetryResult {
     let stopped = false;
 
     let attempts: number;
-    let { retryAttempts } = settings;
+    let { retryAttempts, timeLimit } = settings;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain
     if (retryAttempts && retryAttempts.length) {
         attempts = retryAttempts.length + 1;
@@ -136,6 +147,9 @@ export function retry(settings: RetrySettings): RetryResult {
         else {
             attempts = -1;
         }
+    }
+    if (typeof timeLimit !== 'number' || timeLimit < 0) {
+        timeLimit = 0;
     }
 
     function stopRetry(): Promise<unknown> {
@@ -155,6 +169,7 @@ export function retry(settings: RetrySettings): RetryResult {
         return resultPromise;
     }
 
+    const startTime = new Date().getTime();
     const retryResult: RetryResult = {
         attempt: index,
         error: actionResult,
@@ -162,6 +177,7 @@ export function retry(settings: RetrySettings): RetryResult {
         promise: resultPromise,
         result: callResultList,
         settings,
+        startTime,
         stop: stopRetry,
         stopped: false,
         value: actionResult,
@@ -230,25 +246,29 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
-    function onActionEnd(value: unknown): void {
-        retryResult.value = value;
-        retryResult.result.push({
-            value,
+    function next(test: unknown): void {
+        let proceed = test;
+        const result = {
             time: new Date().getTime()
-        });
-        retryResult.isError = false;
-        retryResult.valueWait = false;
-        let retryTest: unknown;
-        if (! stopped) {
-            retryTest = settings.retryTest;
-            if (! attempts) {
-                retryTest = false;
-            }
-            else if (typeof retryTest === 'function') {
-                retryTest = retryTest(value, retryResult);
-            }
+        } as ActionCallResult;
+        let value;
+
+        if (retryResult.isError) {
+            value = (result as ErrorResult).error = retryResult.error;
         }
-        if (retryTest) {
+        else {
+            value = (result as ValueResult).value = retryResult.value;
+        }
+        retryResult.result.push(result);
+        retryResult.valueWait = false;
+
+        if (stopped || ! attempts) {
+            proceed = false;
+        }
+        else if (typeof proceed === 'function') {
+            proceed = proceed(value, retryResult);
+        }
+        if (proceed && (! timeLimit || new Date().getTime() - startTime <= timeLimit)) {
             repeat();
         }
         else {
@@ -256,27 +276,16 @@ export function retry(settings: RetrySettings): RetryResult {
         }
     }
 
+    function onActionEnd(value: unknown): void {
+        retryResult.value = value;
+        retryResult.isError = false;
+        next(settings.retryTest);
+    }
+
     function onActionError(reason: unknown): void {
         retryResult.error = reason;
-        retryResult.result.push({
-            error: reason,
-            time: new Date().getTime()
-        });
         retryResult.isError = true;
-        retryResult.valueWait = false;
-        let { retryOnError } = settings;
-        if (stopped || ! attempts) {
-            retryOnError = false;
-        }
-        else if (typeof retryOnError === 'function') {
-            retryOnError = retryOnError(reason, retryResult);
-        }
-        if (retryOnError) {
-            repeat();
-        }
-        else {
-            end();
-        }
+        next(settings.retryOnError);
     }
 
     repeat();

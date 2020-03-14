@@ -10,6 +10,7 @@ function retry(settings) {
   var stopped = false;
   var attempts;
   var retryAttempts = settings.retryAttempts;
+  var timeLimit = settings.timeLimit;
 
   if (retryAttempts && retryAttempts.length) {
     attempts = retryAttempts.length + 1;
@@ -22,6 +23,10 @@ function retry(settings) {
     } else {
       attempts = -1;
     }
+  }
+
+  if (typeof timeLimit !== 'number' || timeLimit < 0) {
+    timeLimit = 0;
   }
 
   function stopRetry() {
@@ -41,6 +46,7 @@ function retry(settings) {
     return resultPromise;
   }
 
+  var startTime = new Date().getTime();
   var retryResult = {
     attempt: index,
     error: actionResult,
@@ -48,6 +54,7 @@ function retry(settings) {
     promise: resultPromise,
     result: callResultList,
     settings: settings,
+    startTime: startTime,
     stop: stopRetry,
     stopped: false,
     value: actionResult,
@@ -110,54 +117,45 @@ function retry(settings) {
     }
   }
 
-  function onActionEnd(value) {
-    retryResult.value = value;
-    retryResult.result.push({
-      value: value,
+  function next(test) {
+    var proceed = test;
+    var result = {
       time: new Date().getTime()
-    });
-    retryResult.isError = false;
-    retryResult.valueWait = false;
-    var retryTest;
+    };
+    var value;
 
-    if (!stopped) {
-      retryTest = settings.retryTest;
-
-      if (!attempts) {
-        retryTest = false;
-      } else if (typeof retryTest === 'function') {
-        retryTest = retryTest(value, retryResult);
-      }
+    if (retryResult.isError) {
+      value = result.error = retryResult.error;
+    } else {
+      value = result.value = retryResult.value;
     }
 
-    if (retryTest) {
+    retryResult.result.push(result);
+    retryResult.valueWait = false;
+
+    if (stopped || !attempts) {
+      proceed = false;
+    } else if (typeof proceed === 'function') {
+      proceed = proceed(value, retryResult);
+    }
+
+    if (proceed && (!timeLimit || new Date().getTime() - startTime <= timeLimit)) {
       repeat();
     } else {
       end();
     }
   }
 
+  function onActionEnd(value) {
+    retryResult.value = value;
+    retryResult.isError = false;
+    next(settings.retryTest);
+  }
+
   function onActionError(reason) {
     retryResult.error = reason;
-    retryResult.result.push({
-      error: reason,
-      time: new Date().getTime()
-    });
     retryResult.isError = true;
-    retryResult.valueWait = false;
-    var retryOnError = settings.retryOnError;
-
-    if (stopped || !attempts) {
-      retryOnError = false;
-    } else if (typeof retryOnError === 'function') {
-      retryOnError = retryOnError(reason, retryResult);
-    }
-
-    if (retryOnError) {
-      repeat();
-    } else {
-      end();
-    }
+    next(settings.retryOnError);
   }
 
   repeat();

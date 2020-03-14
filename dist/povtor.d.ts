@@ -12,6 +12,7 @@ export interface RetrySettings {
     retryTimeout?: RetryTimeout;
     retryOnError?: boolean | RetryTest;
     retryTest?: boolean | RetryTest;
+    timeLimit?: number;
     [field: string]: unknown;
 }
 export interface ValueResult {
@@ -32,6 +33,7 @@ export interface RetryResult extends WithPromiseField {
     isError: boolean;
     result: ActionCallResult[];
     settings: RetrySettings;
+    startTime: number;
     stop: () => Promise<unknown>;
     stopped: boolean;
     value: unknown;

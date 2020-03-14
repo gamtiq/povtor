@@ -143,6 +143,7 @@ Call specified function and repeat calls depending on settings.
   When not specified the call of the action function will not be repeated on an error.
 * `retryTest` - a boolean value or a function returning boolean value that specifies whether the action function
   should be called again after a made call. When not specified the action call will not be repeated.
+* `timeLimit` - time in milliseconds specifying how long retry process can last starting from call of `retry` function.
 
 The only required field is `action`.
 
@@ -156,6 +157,7 @@ The only required field is `action`.
 * `isError` - whether the last call of the action function is ended with error.
 * `result` - contains result of each call of the action function.
 * `settings` - settings that were passed to `retry` function.
+* `startTime` - time in milliseconds when `retry` function was called.
 * `stop` - function that can be used to stop the process of calls repeating. Returns value of `promise` field.
 * `stopped` - a boolean value that indicates whether the process of calls repeating is stopped.
 * `value` - a value of last successfull call of the action function. When the action function returns a promise,
