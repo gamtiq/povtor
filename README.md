@@ -1,5 +1,7 @@
 # povtor <a name="start"></a>
 
+[![NPM version](https://badge.fury.io/js/povtor.png)](http://badge.fury.io/js/povtor)
+
 Repeat function call depending on the previous call result and specified conditions.
 
 ```js
@@ -27,8 +29,6 @@ retry({
 * Access values and errors that are produced by function during the process.
 * Does not have dependencies except for [ES 2015 Promise API](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 * Small size.
-
-[![NPM version](https://badge.fury.io/js/povtor.png)](http://badge.fury.io/js/povtor)
 
 ## Table of contents
 
@@ -90,7 +90,7 @@ define(['path/to/dist/povtor.umd.js'], function(povtor) {
 </script>
 ```
 
-### Examples <a name="examples"></a> [&#x2191;](#start)
+## Examples <a name="examples"></a> [&#x2191;](#start)
 
 ```js
 // Request data from API endpoint and repeat request after 3, then 5, then 7 seconds
