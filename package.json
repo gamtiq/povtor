@@ -1,6 +1,6 @@
 {
   "name": "povtor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Repeat function call depending on the previous call result and specified conditions.",
   "main": "dist/povtor.js",
   "module": "dist/povtor.m.js",
@@ -15,8 +15,11 @@
     "lint-all": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "lint-all-error": "eslint \"src/**/*.ts\"",
     "test": "jest",
-    "doc": "typedoc --out doc --readme README.md ./src/index.ts",
-    "check": "npm run lint && npm run test"
+    "doc": "typedoc --out doc --readme README.md --gitRevision master ./src/index.ts",
+    "check": "npm run lint && npm run test",
+    "release": "bump patch --commit --tag --all --push package.json package-lock.json bower.json component.json",
+    "release-minor": "bump minor --commit --tag --all --push package.json package-lock.json bower.json component.json",
+    "release-major": "bump major --commit --tag --all --push package.json package-lock.json bower.json component.json"
   },
   "keywords": [
     "retry",
@@ -52,7 +55,8 @@
     "move-file-cli": "1.0.0",
     "ts-jest": "25.2.1",
     "typedoc": "0.16.11",
-    "typescript": "3.8.3"
+    "typescript": "3.8.3",
+    "version-bump-prompt": "6.0.3"
   },
   "homepage": "https://github.com/gamtiq/povtor",
   "repository": {
