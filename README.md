@@ -7,12 +7,26 @@ retry({
     action: axios,
     actionParams: [{url: '/api/some/endpoint'}],
     retryAttempts: [2000, 5000],
-    retryTest: (response) => response.data.error
+    retryTest: (response) => response.data.error,
+    retryOnError: true
 })
 .promise.then((response) => console.log(response.data));
 ```
 
-Dependency: [ES 2015 Promise API](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+### Features
+
+* Repeats calling of any function whether it returns a promise or a usual value (`action` setting).
+* Use returned promise to get function's last result or last error when retry process is finished.
+* Specify context (`actionContext` setting) and parameters (`actionParams` setting) for function call.
+* Retry function call when it throws or returns rejected promise (use `retryOnError` setting) and/or
+  when it returns normal value or fulfilled promise (use `retryTest` setting).
+* Use a function as value for `retryOnError`/`retryTest` setting to specify condition when to retry action call.
+* Specify quantity and timeouts of retry attempts (use `retryAttempts`, `retryQty` and/or `retryTimeout` settings).
+* Limit overall time of process of retry by `timeLimit` setting.
+* Control the process of calls repeating and stop it when it is necessary.
+* Access values and errors that are produced by function during the process.
+* Does not have dependencies except for [ES 2015 Promise API](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+* Small size.
 
 [![NPM version](https://badge.fury.io/js/povtor.png)](http://badge.fury.io/js/povtor)
 
@@ -22,6 +36,7 @@ Dependency: [ES 2015 Promise API](https://developer.mozilla.org/docs/Web/JavaScr
 * [Usage](#usage)
 * [Examples](#examples)
 * [API](#api)
+* [Related projects](#related)
 * [Contributing](#contributing)
 * [License](#license)
 
@@ -31,7 +46,7 @@ Dependency: [ES 2015 Promise API](https://developer.mozilla.org/docs/Web/JavaScr
 
     npm install povtor
 
-### [Bower](http://bower.io)
+### [Bower](https://bower.io)
 
     bower install povtor
 
@@ -41,7 +56,7 @@ Use `dist/povtor.umd.js` (minified version).
 
 ## Usage <a name="usage"></a> [&#x2191;](#start)
 
-### ECMAScript 6
+### ECMAScript 6+
 
 ```js
 import {retry, getPromiseField} from 'povtor';
@@ -52,13 +67,6 @@ import {retry, getPromiseField} from 'povtor';
 ```js
 const retry = require('povtor').retry;
 const getPromiseField = require('povtor').getPromiseField;
-```
-
-### [Duo](http://duojs.org)
-
-```js
-const retry = require('gamtiq/povtor').retry;
-const getPromiseField = require('gamtiq/povtor').getPromiseField;
 ```
 
 ### AMD/UMD
@@ -91,7 +99,8 @@ let control = retry({
     action: axios,
     actionParams: [{url: '/api/some/endpoint'}],
     retryAttempts: [3000, 5000, 7000],
-    retryTest: (response) => response.data.error || response.data.state !== 3
+    retryTest: (response) => response.data.error || response.data.state !== 3,
+    retryOnError: true
 });
 
 // control.promise will be resolved when a request is completed successfully and retryTest returns false
@@ -170,6 +179,13 @@ The only required field is `action`.
 #### getPromiseField(obj)
 
 Return value of `promise` field of the passed object.
+
+See `doc` folder for details.
+
+## Related projects <a name="related"></a> [&#x2191;](#start)
+
+* [eva](https://github.com/gamtiq/eva)
+* [wrapme](https://github.com/gamtiq/wrapme)
 
 ## Contributing <a name="contributing"></a> [&#x2191;](#start)
 In lieu of a formal styleguide, take care to maintain the existing coding style.

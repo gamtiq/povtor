@@ -20,8 +20,8 @@ export interface RetrySettings {
     delay?: number;
     /**
      * An array specifying amount and timeouts between repeated calls of the action function.
-     * Each item can be a number or a function (see `retryTimeout` setting for details).
-     * Has priority over `retryQty` and `retryTimeout` settings.
+     * Each item can be a number or a function (see [[`retryTimeout`]] setting for details).
+     * Has priority over [[`retryQty`]] and [[`retryTimeout`]] settings.
      */
     retryAttempts?: RetryTimeout[];
     /**
@@ -88,9 +88,9 @@ export interface RetryResult extends WithPromiseField {
     isError: boolean;
     /** Contains result of each call of the action function. */
     result: ActionCallResult[];
-    /** Settings that were passed to `retry` function. */
+    /** Settings that were passed to [[`retry`]] function. */
     settings: RetrySettings;
-    /** Time in milliseconds when `retry` function was called. */
+    /** Time in milliseconds when [[`retry`]] function was called. */
     startTime: number;
     /** Function that can be used to stop the process of calls repeating. Returns value of `promise` field. */
     stop: () => Promise<unknown>;
@@ -117,7 +117,10 @@ export interface RetryResult extends WithPromiseField {
  * Call specified function and repeat calls depending on settings.
  *
  * @param settings
- *      Operation settings.
+ *   Operation settings.
+ * @return
+ *   Object that can be used to observe and control the process of calls repeating.
+ * @author Denis Sikuler
  */
 export function retry(settings: RetrySettings): RetryResult {
     let actionResult, resultReject, resultResolve, timeoutId;
@@ -297,9 +300,9 @@ export function retry(settings: RetrySettings): RetryResult {
  * Return value of `promise` field of the passed object.
  *
  * @param obj
- *      Object whose field should be returned.
+ *   Object whose field should be returned.
  * @return
- *      Value of `promise` field of the passed object.
+ *   Value of `promise` field of the passed object.
  * @author Denis Sikuler
  */
 export function getPromiseField(obj: WithPromiseField): Promise<unknown> {
